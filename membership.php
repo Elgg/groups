@@ -1,26 +1,33 @@
 <?php
+
 	/**
-	 * Elgg groups plugin
+	 * Elgg groups 'member of' page
 	 * 
 	 * @package ElggGroups
 	 * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
-	 * @author Curverider Ltd
+	 * @author Curverider Ltd <info@elgg.com>
 	 * @copyright Curverider Ltd 2008-2010
 	 * @link http://elgg.com/
 	 */
 
 	require_once(dirname(dirname(dirname(__FILE__))) . "/engine/start.php");
 	
+	gatekeeper();
+	group_gatekeeper();
+	
 	$limit = get_input("limit", 10);
 	$offset = get_input("offset", 0);
 	
-	$title = sprintf(elgg_echo("groups:owned"),page_owner_entity()->name);
+	if (page_owner() == $_SESSION['user']->guid) {
+		$title = elgg_echo("groups:yours");
+	} else $title = sprintf(elgg_echo("groups:owned"),page_owner_entity()->name);
 
 	// Get objects
 	$area2 = elgg_view_title($title);
 	
 	set_context('search');
-	$objects = elgg_list_entities(array('types' => 'group', 'owner_guid' => page_owner(), 'limit' => $limit, 'full_view' => FALSE));
+	//$objects = list_entities("group", "", page_owner(), $limit, false);
+	$objects = list_entities_from_relationship('member',page_owner(),false,'group','',0, $limit,false, false);
 	set_context('groups');
 	
 	$area2 .= $objects;
